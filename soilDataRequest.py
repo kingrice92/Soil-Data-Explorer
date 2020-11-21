@@ -55,7 +55,7 @@ class soilDataRequest():
             outputStr = (outputStr + header + ',' 
                          + ','.join(list(formattedTable[header].values)) + ';')
                 
-        self.dataStr = outputStr
+        self.dataStr = bytes(outputStr, 'utf8')
             
 
 if __name__ == "__main__":
