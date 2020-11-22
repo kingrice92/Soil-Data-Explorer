@@ -1,0 +1,5 @@
+# Editor artifacts
+*.swp
+
+# Run artifacts
+*__pycache__*

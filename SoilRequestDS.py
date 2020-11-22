@@ -42,7 +42,7 @@ if __name__ == "__main__":
         outMsg.lat = inMsg.lat
         outMsg.lon = inMsg.lat
         outMsg.val = 62626.333 # Arbitrary
-        outMsg.string = soilData.dataStr
+        outMsg.str = soilData.dataStr
 
         #print('fakeDs output: Lat = ',outMsg.lat,', Lon = ',outMsg.lon,', val = ',outMsg.val)
         responseQueue.put( outMsg )
