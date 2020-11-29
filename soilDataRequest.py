@@ -17,11 +17,14 @@ class soilDataRequest():
         self.lat = latitude
         self.soilData = dict()
         self.dataStr = ""
+        self.disasterData = dict()
+        self.disasterStr = ""
         
     def submitRequest(self):
         
         http = urllib3.PoolManager()
         
+        #Format the Query
         sdmQuery = ("SELECT L.areasymbol AS Area_symbol, L.areaname AS Area_name, M.musym\n"
           + "AS Map_unit_symbol, M.muname AS Map_unit_name, M.mukey AS MUKEY,\n"
           + "comppct_r AS component_Percent, compname AS Component_name\n"
@@ -50,33 +53,34 @@ class soilDataRequest():
                          'Soil Component Name']
         formattedTable = pandas.DataFrame(self.soilData['Table'], columns = columnHeaders)
         
-        outputStr = ("Returned Values," + str(len(formattedTable['Soil Component Name']))
+        outputStr = ("Returned Values;" + str(len(formattedTable['Soil Component Name']))
                      + ";" )
         
         if len(pandas.unique(formattedTable['Map Unit Symbol']))==1:
             for header in columnHeaders:
                 if header=='Soil Component Percent' or header=='Soil Component Name':
-                    outputStr = (outputStr + header + ','
-                                 + ','.join(list(formattedTable[header].values)) + ';')
+                    outputStr = (outputStr + header + ';'
+                                 + ';'.join(list(formattedTable[header].values)) + ';')
                 elif header!='Area Symbol' and header!='Map Unit Key':
-                    outputStr = (outputStr + header + ','
+                    outputStr = (outputStr + header + ';'
                                  + formattedTable[header][1] + ';')
             
         else :   
             for header in columnHeaders:
-                outputStr = (outputStr + header + ','
-                             + ','.join(list(formattedTable[header].values)) + ';')
+                outputStr = (outputStr + header + ';'
+                             + ';'.join(list(formattedTable[header].values)) + ';')
                 
         self.dataStr = bytes(outputStr, 'utf8')
+        
             
-
 if __name__ == "__main__":
 
     #sdr = soilDataRequest(-76.8, 38.9)
     #sdr.submitRequest()
     #sdr.formatSoilDataString()
-    
     #print(sdr.dataStr)
+    
+    #Example coordinate values
     randomCoordinates = [[-77.380574, 38.790458],[-79.883852, 39.574043], 
                          [-107.146538, 36.883092],[-96.099318, 35.922848],
                          [-77.098347, 39.023427],[-77.037128, 38.923906]]
