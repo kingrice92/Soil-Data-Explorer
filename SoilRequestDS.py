@@ -34,6 +34,8 @@ if __name__ == "__main__":
         soilData = sdr.soilDataRequest(inMsg.lon, inMsg.lat)
         soilData.submitRequest()
         soilData.formatSoilDataString()
+        soilData.getFemaData()
+        soilData.formatFemaDataString()
         
         outMsg = struct
         
