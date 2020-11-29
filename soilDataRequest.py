@@ -15,10 +15,11 @@ class soilDataRequest():
     def __init__(self, longitude, latitude):
         self.long   = longitude
         self.lat = latitude
-        self.soilData = dict()
-        self.dataStr = ""
-        self.disasterData = dict()
-        self.disasterStr = ""
+        #self.soilData = dict()
+        #self.dataStr = ""
+        #self.femaStr = ""
+        #self.disasterData = dict()
+        #self.disasterStr = ""
         
     def submitRequest(self):
         
@@ -36,13 +37,13 @@ class soilDataRequest():
           + "LEFT OUTER JOIN component AS c ON M.mukey = c.mukey\n"
           + "ORDER BY M.mukey DESC, comppct_r DESC")
         
-        url = "https://SDMDataAccess.sc.egov.usda.gov/Tabular/SDMTabularService/post.rest"
+        sdmUrl = "https://SDMDataAccess.sc.egov.usda.gov/Tabular/SDMTabularService/post.rest"
         dRequest = dict()
         dRequest["FORMAT"] = "JSON"
         dRequest["QUERY"] = sdmQuery
 
         encodedData = json.dumps(dRequest).encode('utf-8')
-        r = http.request('POST', url, body=encodedData)
+        r = http.request('POST', sdmUrl, body=encodedData)
         
         self.soilData = json.loads(r.data.decode('utf-8'))
         
@@ -51,28 +52,88 @@ class soilDataRequest():
         columnHeaders = ['Area Symbol', 'Area Name', 'Map Unit Symbol', 
                          'Map Unit Name', 'Map Unit Key', 'Soil Component Percent', 
                          'Soil Component Name']
-        formattedTable = pandas.DataFrame(self.soilData['Table'], columns = columnHeaders)
+        self.soilTable = pandas.DataFrame(self.soilData['Table'], columns = columnHeaders)
         
-        outputStr = ("Returned Values;" + str(len(formattedTable['Soil Component Name']))
+        outputStr = ('Returned Values;' + str(len(self.soilTable['Soil Component Name']))
                      + ";" )
         
-        if len(pandas.unique(formattedTable['Map Unit Symbol']))==1:
+        if len(pandas.unique(self.soilTable['Map Unit Symbol']))==1:
             for header in columnHeaders:
                 if header=='Soil Component Percent' or header=='Soil Component Name':
                     outputStr = (outputStr + header + ';'
-                                 + ';'.join(list(formattedTable[header].values)) + ';')
+                                 + ';'.join(list(self.soilTable[header].values)) + ';')
                 elif header!='Area Symbol' and header!='Map Unit Key':
                     outputStr = (outputStr + header + ';'
-                                 + formattedTable[header][1] + ';')
+                                 + self.soilTable[header][1] + ';')
             
-        else :   
+        else:   
             for header in columnHeaders:
                 outputStr = (outputStr + header + ';'
-                             + ';'.join(list(formattedTable[header].values)) + ';')
+                             + ';'.join(list(self.soilTable[header].values)) + ';')
                 
+
         self.dataStr = bytes(outputStr, 'utf8')
         
+      
+    def getFemaData(self):
+        http = urllib3.PoolManager()
+        
+        if len(pandas.unique(self.soilTable['Map Unit Symbol']))==1:
             
+            self.state = self.soilTable['Area Symbol'][1][0:2]
+            areaName = self.soilTable['Area Name'][0]
+
+            if areaName.find(' Counties,') != -1:
+                self.disasterData = []
+            
+            else:
+                
+                if areaName.find(' County,') != -1:
+                    self.county = areaName[1:areaName.find(' County,')]
+                elif areaName.find('District of Columbia') != -1:
+                    self.county = 'District of Columbia'
+            
+                femaUrl = ("https://www.fema.gov/api/open/v2/DisasterDeclarations"
+                           +"Summaries?$filter=state eq '" + self.state + "'")
+
+                r = http.request('GET', femaUrl)
+                
+                self.disasterData = json.loads(r.data.decode('utf-8'))
+        
+        else:
+            self.disasterData = []         
+    
+    def formatFemaDataString(self):
+        
+        if self.disasterData:
+            
+            self.disasterTable = pandas.DataFrame(self.disasterData['DisasterDeclarationsSummaries'])
+            self.disasterTable = self.disasterTable[self.disasterTable['designatedArea'].str.contains(self.county)]
+            self.disasterTable = self.disasterTable[~self.disasterTable['incidentType'].str.contains("Biological")]
+
+            #self.disasterTable = self.disasterTable[['fyDeclared','state','designatedArea','incidentType','declarationTitle']]
+            self.disasterTable = self.disasterTable[['fyDeclared','incidentType','declarationTitle']]
+            
+            columnHeaders = ['Year', 'Incident Type', 'FEMA Decleration Type']
+            self.disasterTable.columns = columnHeaders
+    
+            
+            outputStr = ('Returned Values;' + str(len(self.disasterTable['Year']))
+                         + ";" )
+            
+            for header in columnHeaders:
+                outputStr = (outputStr + header + ';' 
+                             + ';'.join(list(str(s) for s in self.disasterTable[header].values)) + ';')
+
+            self.dataStr = (self.dataStr + bytes(outputStr, 'utf8'))
+       
+        else:
+            
+            self.disasterTable = []
+            outputStr = 'Returned Values;0;Search area too large;'
+            self.dataStr = (self.dataStr + bytes(outputStr, 'utf8'))
+     
+     
 if __name__ == "__main__":
 
     #sdr = soilDataRequest(-76.8, 38.9)
@@ -88,6 +149,8 @@ if __name__ == "__main__":
         sdr = soilDataRequest(coords[0], coords[1])
         sdr.submitRequest()
         sdr.formatSoilDataString()
+        sdr.getFemaData()
+        sdr.formatFemaDataString()
     
         print(sdr.dataStr)
-        print('\n\n')
+        print('\n')
