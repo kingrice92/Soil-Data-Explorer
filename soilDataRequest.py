@@ -53,6 +53,7 @@ class soilDataRequest():
                          'Map Unit Name', 'Map Unit Key', 'Soil Component Percent', 
                          'Soil Component Name']
         self.soilTable = pandas.DataFrame(self.soilData['Table'], columns = columnHeaders)
+        #self.soilTable[['County', 'State']] = self.soilTable['Area Name'].str.split(",",expand=True)
         
         outputStr = ('Returned Values;' + str(len(self.soilTable['Soil Component Name']))
                      + ";" )
@@ -63,15 +64,32 @@ class soilDataRequest():
                     outputStr = (outputStr + header + ';'
                                  + ';'.join(list(self.soilTable[header].values)) + ';')
                 elif header!='Area Symbol' and header!='Map Unit Key':
-                    outputStr = (outputStr + header + ';'
-                                 + self.soilTable[header][1] + ';')
+                    # Split 'Area Name' into seperate County and State Values
+                    if header=='Area Name':
+                        areaName = self.soilTable['Area Name'][0]
+                        if areaName.find('County,') != -1:
+                           outputStr = (outputStr + 'County' + ';'
+                                     + areaName[0:areaName.find('County,')+6] + ';'
+                                     + 'State' + ';' + areaName[areaName.find('County,')+8:] + ';')
+                        elif areaName.find('Counties,') != -1:
+                           outputStr = (outputStr + 'County' + ';'
+                                     + areaName[0:areaName.find('Counties,')+8] + ';'
+                                     + 'State' + ';' + areaName[areaName.find('Counties,')+10:] + ';')
+            
+                        elif areaName.find('District of Columbia') != -1:
+                            outputStr = (outputStr + 'County' + ';'
+                                     + 'District of Columbia' + ';'
+                                     + 'State' + ';' + 'DC' + ';')
+                       
+                    else:
+                        outputStr = (outputStr + header + ';'
+                                     + self.soilTable[header][0] + ';')
             
         else:   
             for header in columnHeaders:
                 outputStr = (outputStr + header + ';'
                              + ';'.join(list(self.soilTable[header].values)) + ';')
                 
-
         self.dataStr = bytes(outputStr, 'utf8')
         
       
@@ -80,7 +98,7 @@ class soilDataRequest():
         
         if len(pandas.unique(self.soilTable['Map Unit Symbol']))==1:
             
-            self.state = self.soilTable['Area Symbol'][1][0:2]
+            self.state = self.soilTable['Area Symbol'][0][0:2]
             areaName = self.soilTable['Area Name'][0]
 
             if areaName.find(' Counties,') != -1:
@@ -89,7 +107,7 @@ class soilDataRequest():
             else:
                 
                 if areaName.find(' County,') != -1:
-                    self.county = areaName[1:areaName.find(' County,')]
+                    self.county = areaName[0:areaName.find(' County,')]
                 elif areaName.find('District of Columbia') != -1:
                     self.county = 'District of Columbia'
             
@@ -111,12 +129,11 @@ class soilDataRequest():
             self.disasterTable = self.disasterTable[self.disasterTable['designatedArea'].str.contains(self.county)]
             self.disasterTable = self.disasterTable[~self.disasterTable['incidentType'].str.contains("Biological")]
 
-            #self.disasterTable = self.disasterTable[['fyDeclared','state','designatedArea','incidentType','declarationTitle']]
-            self.disasterTable = self.disasterTable[['fyDeclared','incidentType','declarationTitle']]
+            self.disasterTable = self.disasterTable[['fyDeclared','state','designatedArea','incidentType','declarationTitle']]
+            #self.disasterTable = self.disasterTable[['fyDeclared','incidentType','declarationTitle']]
             
-            columnHeaders = ['Year', 'Incident Type', 'FEMA Decleration Type']
+            columnHeaders = ['Year', 'State', 'County', 'Incident Type', 'FEMA Decleration Type']
             self.disasterTable.columns = columnHeaders
-    
             
             outputStr = ('Returned Values;' + str(len(self.disasterTable['Year']))
                          + ";" )
@@ -135,22 +152,21 @@ class soilDataRequest():
      
      
 if __name__ == "__main__":
-
-    #sdr = soilDataRequest(-76.8, 38.9)
-    #sdr.submitRequest()
-    #sdr.formatSoilDataString()
-    #print(sdr.dataStr)
     
     #Example coordinate values
-    randomCoordinates = [[-77.380574, 38.790458],[-79.883852, 39.574043], 
-                         [-107.146538, 36.883092],[-96.099318, 35.922848],
-                         [-77.098347, 39.023427],[-77.037128, 38.923906]]
-    for coords in randomCoordinates:
+    #randomCoordinates = [[-77.380574, 38.790458],[-79.883852, 39.574043], 
+    #                     [-107.146538, 36.883092],[-96.099318, 35.922848],
+    #                     [-77.098347, 39.023427],[-77.037128, 38.923906]]
+    
+    demoCoordinates = [[-76.88, 38.81], [-77.01, 38.92],
+                       [-77.14, 38.82], [-77.00, 38.70]]
+    #for coords in randomCoordinates:
+    for coords in demoCoordinates:
+        
         sdr = soilDataRequest(coords[0], coords[1])
         sdr.submitRequest()
         sdr.formatSoilDataString()
         sdr.getFemaData()
         sdr.formatFemaDataString()
-    
         print(sdr.dataStr)
         print('\n')
