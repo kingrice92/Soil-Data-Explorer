@@ -3,7 +3,11 @@
 """
 Created on Tue Nov 10 00:15:21 2020
 
-@author: neilkingrice
+@author: Neil Rice
+
+This is a script to test the process of building an SQL query with all of the 
+desired data requests for a given set of coordinates and submitting it to the 
+Soil Data Mart.
 """
 
 import json
@@ -13,11 +17,6 @@ http = urllib3.PoolManager()
 
 latitude = 37.326998
 longitude = -77.455749
-
-#sQuery = ("SELECT mukey AS MUKEY, muname AS Map_unit_name\n"
-#+ "FROM mapunit\nWHERE mukey IN (SELECT * from "
-#+ "SDA_Get_Mukey_from_intersection_with_WktWgs84('point (" + str(longitude)
-#+ " " + str(latitude) + ")'))")
 
 sQuery = ("SELECT L.areasymbol AS Area_symbol, L.areaname AS Area_name, M.musym\n"
           + "AS Map_unit_symbol, M.muname AS Map_unit_name, M.mukey AS MUKEY,\n"
@@ -43,10 +42,8 @@ data = json.loads(r.data.decode('utf-8'))
 
 areaSym = data['Table'][0][0][:]
 areaName= data['Table'][0][1][:]
-MapUnitSymbol = data['Table'][0][3][:]
+MapUnitSymbol = data['Table'][0][2][:]
 MapUnitName = data['Table'][0][5][:]
 mukey= data['Table'][0][6][:]
-#date = data['Table'][0][2]
 
-#print(areaSym, areaName, date)
 print(areaSym, areaName, MapUnitSymbol, MapUnitName, mukey)

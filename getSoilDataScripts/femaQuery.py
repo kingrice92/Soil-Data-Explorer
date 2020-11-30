@@ -5,7 +5,7 @@ Created on Fri Nov 27 16:14:05 2020
 
 @author: Neil Rice
 
-This is a test script use to debug the process of creating FEMA database
+This is a test script to debug the process of creating FEMA database
 queries using the parsed data from the Soil Data Mart queries. 
 """
 

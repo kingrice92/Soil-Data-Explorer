@@ -1,56 +1,34 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Spyder Editor
 
-This is a temporary script file.
+@author: Neil Rice
+
+This is a script to test the process of generating a pAOI using an Area 
+Symbol keyword.
 """
 import json
 import urllib3
 
 http = urllib3.PoolManager()
 
+#Set the coordinates to be used in the data request.
 latitude = 37.326998
 longitude = -77.455749
 
-#sQuery = ("SELECT mukey AS MUKEY, muname AS Map_unit_name\n"
-#+ "FROM mapunit\nWHERE mukey IN (SELECT * from "
-#+ "SDA_Get_Mukey_from_intersection_with_WktWgs84('point (" + str(longitude)
-#+ " " + str(latitude) + ")'))")
-'''
-sQuery = ("SELECT L.areasymbol AS Area_symbol, L.areaname AS Area_name, M.musym\n"
-          + "AS Map_unit_symbol, M.muname AS Map_unit_name, M.mukey AS MUKEY,\n"
-          + "comppct_r AS component_Percent, compname AS Component_name\n"
-          + "FROM legend AS L\n"
-          + "INNER JOIN mapunit AS M ON M.Lkey = L.Lkey\n"
-          + "AND M.mukey IN (SELECT mukey FROM"
-          + " SDA_Get_Mukey_from_intersection_with_WktWgs84('point (" 
-          + str(longitude) + " " + str(latitude) + ")'))\n"
-          + "LEFT OUTER JOIN component AS c ON M.mukey = c.mukey\n"
-          + "ORDER BY M.mukey DESC, compname")
-'''       
+#Define URL of of post.rest web service.    
 url = "https://SDMDataAccess.sc.egov.usda.gov/Tabular/SDMTabularService/post.rest"
 
+#Build JSON request.
 dRequest = dict()
 dRequest["SERVICE"] = "aoi"
 dRequest["REQUEST"] = "create"
 dRequest["SSA"] = "VA041"
-
-
 encoded_data = json.dumps(dRequest).encode('utf-8')
+#Send the request.
 r = http.request('POST', url, body=encoded_data)
 
+#Unpack returned data.
 pAOI = json.loads(r.data.decode('utf-8'))
 
 print("pAOI = " + str(pAOI))
-
-'''
-areaSym = data['Table'][0][0][:]
-areaName= data['Table'][0][1][:]
-MapUnitSymbol = data['Table'][0][3][:]
-MapUnitName = data['Table'][0][5][:]
-mukey= data['Table'][0][6][:]
-#date = data['Table'][0][2]
-
-#print(areaSym, areaName, date)
-print(areaSym, areaName, MapUnitSymbol, MapUnitName, mukey)
-'''

@@ -3,7 +3,10 @@
 """
 Created on Sun Nov  8 22:49:57 2020
 
-@author: neilkingrice
+@author: Neil Rice
+
+This is a script to test the process of building an SQL query with a set of 
+coordinates and submitting it to the Soil Data Mart.
 """
 
 import json
@@ -14,11 +17,6 @@ http = urllib3.PoolManager()
 latitude = 38.896847
 longitude = -77.029501
 #areaSymbol = "DC001"
-
-#sQuery = ("SELECT mukey AS MUKEY, muname AS Map_unit_name\n"
-#+ "FROM mapunit\nWHERE mukey IN (SELECT * from "
-#+ "SDA_Get_Mukey_from_intersection_with_WktWgs84('point (" + str(longitude)
-#+ " " + str(latitude) + ")'))")
 
 sQuery = ("SELECT L.areasymbol AS Area_symbol, L.areaname AS Area_name, M.musym"
           + " AS Map_unit_symbol, M.muname AS Map_unit_name, M.mukey AS MUKEY\n"
