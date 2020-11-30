@@ -112,7 +112,7 @@ class soilDataRequest():
                     self.county = 'District of Columbia'
             
                 femaUrl = ("https://www.fema.gov/api/open/v2/DisasterDeclarations"
-                           +"Summaries?$filter=state eq '" + self.state + "'")
+                           +"Summaries?$filter=state+eq+'" + self.state + "'")
 
                 r = http.request('GET', femaUrl)
                 
