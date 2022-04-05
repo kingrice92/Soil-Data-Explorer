@@ -9,7 +9,7 @@ Sample scripts for querying the soil data mart for various data outputs.
 
 Note the import messages at the top of each script
 
-These packages come preinstalled with Anaconda, which is the python kit I use for all of my work.
+These packages come preinstalled with Anaconda, which is the python kit I used for all of my work.
 It can be downloaded here: https://www.anaconda.com/products/individual
 
 ## Run Instructions
