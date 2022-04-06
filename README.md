@@ -15,4 +15,4 @@ It can be downloaded here: https://www.anaconda.com/products/individual
 
 ## Run Instructions
 
-Once Anaconda is installed, launch the Spyder development environment from the Anaconda navigator and these should scripts shouldwork out of the box.
+Once Anaconda is installed, launch the Spyder development environment from the Anaconda navigator and these scripts should work out of the box.
