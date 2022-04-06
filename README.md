@@ -1,4 +1,4 @@
-# Soil-Data-Explorer
+# Soil Data Explorer
 
 This is a collection of work that was completed as part of my final project for CSCI 6221 at GW in Fall 2020.
 This repository contains sample scripts to query the soil data mart for various data outputs.
